@@ -28,10 +28,24 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        //flowlayout 적용
+        let viewWidth: CGFloat = UIScreen.main.bounds.width / 2 //한 행 당 2개의 셀 배치
+        let SectionInset: CGFloat = (UIScreen.main.bounds.width - 80) / 3
+        let flowlayout = UICollectionViewFlowLayout()
+        flowlayout.sectionInset = UIEdgeInsets(top: 0, left: 20 , bottom: 0, right: 20)
+        //flowlayout.minimumLineSpacing = 5
+        flowlayout.itemSize = CGSize(width: viewWidth - 40, height: viewWidth + 40)
+        collectionView.collectionViewLayout = flowlayout
+        
         requestCollection{
             granted in guard granted else { return }
             self.fetchAssets()
-            DispatchQueue.main.async {
+//            DispatchQueue.main.async {
+//                print("큐에 스레드 돌아가는중")
+//                self.collectionView.reloadData()
+//            }
+            OperationQueue.main.addOperation {
                 print("큐에 스레드 돌아가는중")
                 self.collectionView.reloadData()
             }
@@ -49,9 +63,6 @@ class ViewController: UIViewController {
     }
     
     func fetchAssets(){
-        let fetchOptions = PHFetchOptions()
-        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)] //최신 날짜순으로 사진들 sort
-        //smartAlbum 타입이라서 그런지 옵션으로 최신 날짜순의 정렬을 하면 에러 발생함 options를 nil 로 주어야함.
         self.albumCollections = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumRegular, options: nil)
     }
 }
@@ -73,7 +84,9 @@ extension ViewController: UICollectionViewDataSource {
         }
         var coverAsset: PHAsset?
         let collection = albumCollections[indexPath.item]
-        let fetchedAssets = PHAsset.fetchAssets(in: collection, options: nil)
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)] //최신 날짜순으로 사진들 sort
+        let fetchedAssets = PHAsset.fetchAssets(in: collection, options: fetchOptions)
         coverAsset = fetchedAssets.firstObject
         
         cell.albumName.text = collection.localizedTitle
@@ -91,7 +104,6 @@ extension ViewController: UICollectionViewDataSource {
         
         return cell
     }
-    
     
    
 }
