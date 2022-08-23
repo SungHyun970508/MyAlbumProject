@@ -31,7 +31,6 @@ class ViewController: UIViewController {
         
         //flowlayout 적용
         let viewWidth: CGFloat = UIScreen.main.bounds.width / 2 //한 행 당 2개의 셀 배치
-        let SectionInset: CGFloat = (UIScreen.main.bounds.width - 80) / 3
         let flowlayout = UICollectionViewFlowLayout()
         flowlayout.sectionInset = UIEdgeInsets(top: 0, left: 20 , bottom: 0, right: 20)
         //flowlayout.minimumLineSpacing = 5
@@ -67,6 +66,7 @@ class ViewController: UIViewController {
     }
 }
 
+//MARK: - collectionView cell 데이터 불러오기
 extension ViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -104,7 +104,33 @@ extension ViewController: UICollectionViewDataSource {
         
         return cell
     }
-    
-   
 }
 
+//MARK: - ViewController에서 PhotoViewComtroller 화면 전환 및 데이터 전달
+extension ViewController: UICollectionViewDelegate {
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let photoViewController = self.storyboard?.instantiateViewController(withIdentifier: "PhotoViewController") as? PhotoViewController else { return }
+        
+        guard let selectedIndexPath = self.collectionView.indexPathsForSelectedItems?.first else {
+            return }
+        
+        let item = selectedIndexPath.item
+        print(selectedIndexPath)
+        let assets: PHFetchResult<PHAsset>
+        let title: String
+        
+        let album = albumCollections[item]
+//        assets = PHAssetCollection.fetchAssetCollections(with: , subtype: .albumRegular, options: nil)
+        assets = PHAsset.fetchAssets(in: album, options: nil)
+        title = album.localizedTitle ?? ""
+        
+        photoViewController.photoCollection = assets
+        photoViewController.albumTitle = title
+        photoViewController.photoCollectionIdx = assets.count
+        
+        self.navigationController?.pushViewController(photoViewController, animated: true)
+        
+    }
+    
+}
